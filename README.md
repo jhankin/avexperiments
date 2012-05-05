@@ -1,0 +1,4 @@
+avexperiments
+=============
+
+Experiments using AVFoundation
