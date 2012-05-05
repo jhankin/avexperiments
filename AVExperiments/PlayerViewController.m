@@ -29,7 +29,7 @@
 @interface PlayerViewController () {
     NSURL *_fileURL;
     PlayerView *_playerView;
-    UIButton *_playButton;
+    UIBarButtonItem *_playButton;
     AVURLAsset *_asset;
     AVPlayer *_player;
     AVPlayerItem *_playerItem;
@@ -65,14 +65,9 @@ static const NSString *ItemStatusContext;
     [_playerView release];
     
     
-    _playButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    [_playButton setTitle:@"Play" forState:UIControlStateNormal];
-    [_playButton setTitle:@"Hang on" forState:UIControlStateDisabled];
-    [_playButton setCenter:CGPointMake(self.view.frame.size.width / 2.0, self.view.frame.size.height - _playButton.frame.size.height)];
-    [_playButton setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin];
-    [_playButton addTarget:self action:@selector(playButtonPress:) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:_playButton];
-                                                                                                            
+    _playButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemPlay target:self action:@selector(playButtonPress:)];
+    self.navigationItem.rightBarButtonItem = _playButton;          
+    [_playButton release];
     
     
     NSString *tracksKey = @"tracks";
@@ -158,6 +153,7 @@ static const NSString *ItemStatusContext;
 
 - (void)viewDidUnload
 {
+    [_playerItem removeObserver:self forKeyPath:@"status"];
     [_player removeObserver:self forKeyPath:@"rate"]; 
     [_player removeObserver:self forKeyPath:@"status"];
     [_player release];
