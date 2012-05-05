@@ -1,0 +1,305 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5760D97C155478940016B637 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5760D97B155478940016B637 /* UIKit.framework */; };
+		5760D97E155478940016B637 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5760D97D155478940016B637 /* Foundation.framework */; };
+		5760D980155478940016B637 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5760D97F155478940016B637 /* CoreGraphics.framework */; };
+		5760D986155478940016B637 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5760D984155478940016B637 /* InfoPlist.strings */; };
+		5760D988155478940016B637 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 5760D987155478940016B637 /* main.m */; };
+		5760D98C155478940016B637 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 5760D98B155478940016B637 /* AppDelegate.m */; };
+		5760D993155478A10016B637 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5760D992155478A10016B637 /* AVFoundation.framework */; };
+		5760D995155478D80016B637 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5760D994155478D80016B637 /* CoreMedia.framework */; };
+		5760D998155479BF0016B637 /* RootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5760D997155479BF0016B637 /* RootViewController.m */; };
+		5760D99B155479CE0016B637 /* CameraViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5760D99A155479CE0016B637 /* CameraViewController.m */; };
+		5760D9B4155499680016B637 /* ShowVideosViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5760D9B3155499680016B637 /* ShowVideosViewController.m */; };
+		5770482115549C5700BACCBD /* PlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5770482015549C5700BACCBD /* PlayerViewController.m */; };
+		5770482415549F9B00BACCBD /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5770482315549F9B00BACCBD /* MediaPlayer.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		5760D977155478940016B637 /* AVExperiments.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVExperiments.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5760D97B155478940016B637 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		5760D97D155478940016B637 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		5760D97F155478940016B637 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		5760D983155478940016B637 /* AVExperiments-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "AVExperiments-Info.plist"; sourceTree = "<group>"; };
+		5760D985155478940016B637 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		5760D987155478940016B637 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		5760D989155478940016B637 /* AVExperiments-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AVExperiments-Prefix.pch"; sourceTree = "<group>"; };
+		5760D98A155478940016B637 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		5760D98B155478940016B637 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		5760D992155478A10016B637 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		5760D994155478D80016B637 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		5760D996155479BF0016B637 /* RootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RootViewController.h; sourceTree = "<group>"; };
+		5760D997155479BF0016B637 /* RootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RootViewController.m; sourceTree = "<group>"; };
+		5760D999155479CE0016B637 /* CameraViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraViewController.h; sourceTree = "<group>"; };
+		5760D99A155479CE0016B637 /* CameraViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraViewController.m; sourceTree = "<group>"; };
+		5760D99C15548EA80016B637 /* FZMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FZMacros.h; sourceTree = "<group>"; };
+		5760D9B2155499680016B637 /* ShowVideosViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShowVideosViewController.h; sourceTree = "<group>"; };
+		5760D9B3155499680016B637 /* ShowVideosViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShowVideosViewController.m; sourceTree = "<group>"; };
+		5770481F15549C5700BACCBD /* PlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerViewController.h; sourceTree = "<group>"; };
+		5770482015549C5700BACCBD /* PlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayerViewController.m; sourceTree = "<group>"; };
+		5770482315549F9B00BACCBD /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5760D974155478940016B637 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5770482415549F9B00BACCBD /* MediaPlayer.framework in Frameworks */,
+				5760D995155478D80016B637 /* CoreMedia.framework in Frameworks */,
+				5760D993155478A10016B637 /* AVFoundation.framework in Frameworks */,
+				5760D97C155478940016B637 /* UIKit.framework in Frameworks */,
+				5760D97E155478940016B637 /* Foundation.framework in Frameworks */,
+				5760D980155478940016B637 /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5760D96C155478940016B637 = {
+			isa = PBXGroup;
+			children = (
+				5770482315549F9B00BACCBD /* MediaPlayer.framework */,
+				5760D994155478D80016B637 /* CoreMedia.framework */,
+				5760D992155478A10016B637 /* AVFoundation.framework */,
+				5760D981155478940016B637 /* AVExperiments */,
+				5760D97A155478940016B637 /* Frameworks */,
+				5760D978155478940016B637 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5760D978155478940016B637 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5760D977155478940016B637 /* AVExperiments.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5760D97A155478940016B637 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5760D97B155478940016B637 /* UIKit.framework */,
+				5760D97D155478940016B637 /* Foundation.framework */,
+				5760D97F155478940016B637 /* CoreGraphics.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5760D981155478940016B637 /* AVExperiments */ = {
+			isa = PBXGroup;
+			children = (
+				5760D99C15548EA80016B637 /* FZMacros.h */,
+				5760D98A155478940016B637 /* AppDelegate.h */,
+				5760D98B155478940016B637 /* AppDelegate.m */,
+				5760D996155479BF0016B637 /* RootViewController.h */,
+				5760D997155479BF0016B637 /* RootViewController.m */,
+				5760D999155479CE0016B637 /* CameraViewController.h */,
+				5760D99A155479CE0016B637 /* CameraViewController.m */,
+				5760D9B2155499680016B637 /* ShowVideosViewController.h */,
+				5760D9B3155499680016B637 /* ShowVideosViewController.m */,
+				5770481F15549C5700BACCBD /* PlayerViewController.h */,
+				5770482015549C5700BACCBD /* PlayerViewController.m */,
+				5760D982155478940016B637 /* Supporting Files */,
+			);
+			path = AVExperiments;
+			sourceTree = "<group>";
+		};
+		5760D982155478940016B637 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				5760D983155478940016B637 /* AVExperiments-Info.plist */,
+				5760D984155478940016B637 /* InfoPlist.strings */,
+				5760D987155478940016B637 /* main.m */,
+				5760D989155478940016B637 /* AVExperiments-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5760D976155478940016B637 /* Vindreo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5760D98F155478940016B637 /* Build configuration list for PBXNativeTarget "Vindreo" */;
+			buildPhases = (
+				5760D973155478940016B637 /* Sources */,
+				5760D974155478940016B637 /* Frameworks */,
+				5760D975155478940016B637 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Vindreo;
+			productName = AVExperiments;
+			productReference = 5760D977155478940016B637 /* AVExperiments.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5760D96E155478940016B637 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0430;
+				ORGANIZATIONNAME = "Blackboard, Inc.";
+			};
+			buildConfigurationList = 5760D971155478940016B637 /* Build configuration list for PBXProject "AVExperiments" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 5760D96C155478940016B637;
+			productRefGroup = 5760D978155478940016B637 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5760D976155478940016B637 /* Vindreo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5760D975155478940016B637 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5760D986155478940016B637 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5760D973155478940016B637 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5760D988155478940016B637 /* main.m in Sources */,
+				5760D98C155478940016B637 /* AppDelegate.m in Sources */,
+				5760D998155479BF0016B637 /* RootViewController.m in Sources */,
+				5760D99B155479CE0016B637 /* CameraViewController.m in Sources */,
+				5760D9B4155499680016B637 /* ShowVideosViewController.m in Sources */,
+				5770482115549C5700BACCBD /* PlayerViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		5760D984155478940016B637 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5760D985155478940016B637 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		5760D98D155478940016B637 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		5760D98E155478940016B637 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		5760D990155478940016B637 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "AVExperiments/AVExperiments-Prefix.pch";
+				INFOPLIST_FILE = "AVExperiments/AVExperiments-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		5760D991155478940016B637 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "AVExperiments/AVExperiments-Prefix.pch";
+				INFOPLIST_FILE = "AVExperiments/AVExperiments-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5760D971155478940016B637 /* Build configuration list for PBXProject "AVExperiments" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5760D98D155478940016B637 /* Debug */,
+				5760D98E155478940016B637 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5760D98F155478940016B637 /* Build configuration list for PBXNativeTarget "Vindreo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5760D990155478940016B637 /* Debug */,
+				5760D991155478940016B637 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 5760D96E155478940016B637 /* Project object */;
+}
