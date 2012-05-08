@@ -87,7 +87,7 @@
     AVCaptureVideoPreviewLayer *captureVideoPreviewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:_session];
     captureVideoPreviewLayer.frame = self.view.bounds;
     [viewLayer addSublayer:captureVideoPreviewLayer];
-    [captureVideoPreviewLayer setVideoGravity:AVLayerVideoGravityResizeAspect];
+    [captureVideoPreviewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(captureSessionRuntimeError:) name:AVCaptureSessionRuntimeErrorNotification object:nil];
     

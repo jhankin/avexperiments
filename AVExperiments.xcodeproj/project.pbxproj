@@ -23,7 +23,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		5760D977155478940016B637 /* AVExperiments.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVExperiments.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5760D977155478940016B637 /* Vindreo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vindreo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5760D97B155478940016B637 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		5760D97D155478940016B637 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		5760D97F155478940016B637 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -79,7 +79,7 @@
 		5760D978155478940016B637 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5760D977155478940016B637 /* AVExperiments.app */,
+				5760D977155478940016B637 /* Vindreo.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -141,7 +141,7 @@
 			);
 			name = Vindreo;
 			productName = AVExperiments;
-			productReference = 5760D977155478940016B637 /* AVExperiments.app */;
+			productReference = 5760D977155478940016B637 /* Vindreo.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

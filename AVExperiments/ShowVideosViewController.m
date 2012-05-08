@@ -18,6 +18,8 @@
     UITableView *_tableView;
 }
 
+- (void)loadFilenames;
+
 @end
 
 @implementation ShowVideosViewController
@@ -26,13 +28,7 @@
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        _path = [FZ_DOCUMENT_PATH(@"videos") retain];
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        NSError *error = nil;
-        _filenames = [[fileManager contentsOfDirectoryAtPath:_path error:&error] retain];
-        if (error) {
-            NSLog(@"Error listing directory at path %@: %@", _path, error);
-        }
+        [self loadFilenames];
     }
     return self;
 }
@@ -56,6 +52,18 @@
     [_tableView release];
     
     self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneButtonPress:)] autorelease];
+}
+
+- (void)loadFilenames {
+    FZ_SAFE_RELEASE(_path);
+    FZ_SAFE_RELEASE(_filenames);
+    _path = [FZ_DOCUMENT_PATH(@"videos") retain];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSError *error = nil;
+    _filenames = [[fileManager contentsOfDirectoryAtPath:_path error:&error] retain];
+    if (error) {
+        NSLog(@"Error listing directory at path %@: %@", _path, error);
+    }
 }
      
 - (void)doneButtonPress:(id)sender {
@@ -88,6 +96,23 @@
     PlayerViewController *playerViewController = [[PlayerViewController alloc] initWithFileURL:fileURL];
     [self.navigationController pushViewController:playerViewController animated:YES];
     [playerViewController release];
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        NSString *filePath = [_path stringByAppendingPathComponent:[_filenames objectAtIndex:indexPath.row]];
+        NSError *error = nil;
+        [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error];
+        if (!error) {
+            [self loadFilenames];
+            [_tableView reloadData];
+        } else {
+            NSString *errorMessage = [error localizedDescription];
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:errorMessage delegate:nil cancelButtonTitle:@"Close" otherButtonTitles:nil];
+            [alert show];
+            [alert release];
+        }
+    }
 }
 
 - (void)viewDidUnload

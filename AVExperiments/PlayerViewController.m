@@ -50,9 +50,25 @@
 }
 
 - (void)dealloc {
+    [_playerItem removeObserver:self forKeyPath:@"status" context:&ItemStatusContext];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     [_fileURL release];
     [super dealloc];
 }
+
+#pragma mark - Interface
+
+- (void)play {
+    [_player play];
+}
+
+- (void)exit {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.navigationController popViewControllerAnimated:YES];
+    });
+}
+
+#pragma mark - View Lifecycle
 
 static const NSString *ItemStatusContext;
 
@@ -91,13 +107,31 @@ static const NSString *ItemStatusContext;
     }];
 }
 
+
+
+- (void)viewDidUnload
+{
+    [_playerItem removeObserver:self forKeyPath:@"status" context:&ItemStatusContext];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [_player release];
+    [_asset release];
+    [super viewDidUnload];
+    // Release any retained subviews of the main view.
+}
+
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    return (interfaceOrientation == UIInterfaceOrientationPortrait);
+}
+
+#pragma mark - Button Actions
+
 - (void)playButtonPress:(id)sender {
     [self play];
 }
 
-- (void)play {
-    [_player play];
-}
+#pragma mark - UI Updates
 
 - (void)syncUI {
     if (_player.currentItem != nil && [_player.currentItem status] == AVPlayerItemStatusReadyToPlay) {
@@ -106,6 +140,9 @@ static const NSString *ItemStatusContext;
         _playButton.enabled = NO;
     }
 }
+
+
+#pragma mark - Observation
 
 - (void)playerItemDidReachEnd:(NSNotification *)notification {
     [_player seekToTime:kCMTimeZero];
@@ -123,48 +160,7 @@ static const NSString *ItemStatusContext;
     [super observeValueForKeyPath:keyPath ofObject:object
                            change:change context:context];
     return;
-    
-    
-    if ([keyPath isEqualToString:@"status"]) 
-    {
-        id value = [change objectForKey:NSKeyValueChangeNewKey];
-        AVPlayerStatus status = [value intValue];
-        if (status == AVPlayerStatusReadyToPlay) {
-            [self play];
-        } else if (status == AVPlayerStatusFailed) {
-            NSLog(@"Player status failed! Error: %@", [_player error]);
-            [self exit];
-        }
-    }
-    else if ([keyPath isEqualToString:@"rate"]) {
-        id value = [change objectForKey:NSKeyValueChangeNewKey];
-        float newRate = [value floatValue];
-        if (newRate == 0.0) {
-            [self exit];
-        }
-    }
 }
 
-- (void)exit {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.navigationController popViewControllerAnimated:YES];
-    });
-}
-
-- (void)viewDidUnload
-{
-    [_playerItem removeObserver:self forKeyPath:@"status"];
-    [_player removeObserver:self forKeyPath:@"rate"]; 
-    [_player removeObserver:self forKeyPath:@"status"];
-    [_player release];
-    [_asset release];
-    [super viewDidUnload];
-    // Release any retained subviews of the main view.
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    return (interfaceOrientation == UIInterfaceOrientationPortrait);
-}
 
 @end

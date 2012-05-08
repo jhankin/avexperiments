@@ -11,5 +11,7 @@
 @interface PlayerViewController : UIViewController
 
 - (id)initWithFileURL:(NSURL *)fileURL;
+- (void)play;
+- (void)exit;
 
 @end
