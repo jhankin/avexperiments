@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		573ECA0615589B3B0022052E /* VideoProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 573ECA0515589B3B0022052E /* VideoProcessor.m */; };
+		574C2E281559BB97008C4B01 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 574C2E271559BB97008C4B01 /* QuartzCore.framework */; };
+		574C2E2B1559BDDD008C4B01 /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 574C2E2A1559BDDD008C4B01 /* CoreImage.framework */; };
+		574C2E2D1559C171008C4B01 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 574C2E2C1559C171008C4B01 /* CoreVideo.framework */; };
 		5760D97C155478940016B637 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5760D97B155478940016B637 /* UIKit.framework */; };
 		5760D97E155478940016B637 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5760D97D155478940016B637 /* Foundation.framework */; };
 		5760D980155478940016B637 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5760D97F155478940016B637 /* CoreGraphics.framework */; };
@@ -23,6 +27,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		573ECA0415589B3B0022052E /* VideoProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoProcessor.h; sourceTree = "<group>"; };
+		573ECA0515589B3B0022052E /* VideoProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoProcessor.m; sourceTree = "<group>"; };
+		574C2E271559BB97008C4B01 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		574C2E2A1559BDDD008C4B01 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
+		574C2E2C1559C171008C4B01 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		5760D977155478940016B637 /* Vindreo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vindreo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5760D97B155478940016B637 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		5760D97D155478940016B637 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -52,6 +61,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				574C2E2D1559C171008C4B01 /* CoreVideo.framework in Frameworks */,
+				574C2E2B1559BDDD008C4B01 /* CoreImage.framework in Frameworks */,
+				574C2E281559BB97008C4B01 /* QuartzCore.framework in Frameworks */,
 				5770482415549F9B00BACCBD /* MediaPlayer.framework in Frameworks */,
 				5760D995155478D80016B637 /* CoreMedia.framework in Frameworks */,
 				5760D993155478A10016B637 /* AVFoundation.framework in Frameworks */,
@@ -67,6 +79,9 @@
 		5760D96C155478940016B637 = {
 			isa = PBXGroup;
 			children = (
+				574C2E2C1559C171008C4B01 /* CoreVideo.framework */,
+				574C2E2A1559BDDD008C4B01 /* CoreImage.framework */,
+				574C2E271559BB97008C4B01 /* QuartzCore.framework */,
 				5770482315549F9B00BACCBD /* MediaPlayer.framework */,
 				5760D994155478D80016B637 /* CoreMedia.framework */,
 				5760D992155478A10016B637 /* AVFoundation.framework */,
@@ -108,6 +123,8 @@
 				5760D9B3155499680016B637 /* ShowVideosViewController.m */,
 				5770481F15549C5700BACCBD /* PlayerViewController.h */,
 				5770482015549C5700BACCBD /* PlayerViewController.m */,
+				573ECA0415589B3B0022052E /* VideoProcessor.h */,
+				573ECA0515589B3B0022052E /* VideoProcessor.m */,
 				5760D982155478940016B637 /* Supporting Files */,
 			);
 			path = AVExperiments;
@@ -192,6 +209,7 @@
 				5760D99B155479CE0016B637 /* CameraViewController.m in Sources */,
 				5760D9B4155499680016B637 /* ShowVideosViewController.m in Sources */,
 				5770482115549C5700BACCBD /* PlayerViewController.m in Sources */,
+				573ECA0615589B3B0022052E /* VideoProcessor.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

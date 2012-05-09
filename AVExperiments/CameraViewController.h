@@ -9,6 +9,16 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 
-@interface CameraViewController : UIViewController <AVCaptureFileOutputRecordingDelegate>
+@interface CameraViewController : UIViewController <AVCaptureVideoDataOutputSampleBufferDelegate> {
+    AVCaptureSession *_session;
+    AVCaptureVideoDataOutput *_dataOutput;
+    dispatch_queue_t _serialQueue;
+
+    AVCaptureVideoPreviewLayer *_previewLayer;
+    CIContext *_context;
+    CIFilter *_effectFilter;
+    CALayer *_displayLayer;
+    UIImageView *_imageView;
+}
 
 @end
