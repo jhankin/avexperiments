@@ -8,15 +8,18 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import <QuartzCore/QuartzCore.h>
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
 
 @interface CameraViewController : UIViewController <AVCaptureVideoDataOutputSampleBufferDelegate> {
+    CAEAGLLayer *_eaglLayer;
+    
     AVCaptureSession *_session;
     AVCaptureVideoDataOutput *_dataOutput;
     dispatch_queue_t _serialQueue;
 
     AVCaptureVideoPreviewLayer *_previewLayer;
-    CIContext *_context;
-    CIFilter *_effectFilter;
     CALayer *_displayLayer;
     UIImageView *_imageView;
 }

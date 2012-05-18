@@ -9,14 +9,82 @@
 #import "CameraViewController.h"
 #import "FZMacros.h"
 #import "VideoProcessor.h"
-#import <QuartzCore/QuartzCore.h>
 #import <CoreVideo/CoreVideo.h>
+
+#define COLOR_TEST 1
+
+#if COLOR_TEST
+typedef struct {
+    float Position[3];
+    float Color[4];
+    float TexCoord[2];
+} Vertex;
+
+const Vertex Vertices[] = {
+    {{1, -1, 0},    {1, 0, 0, 1},   {1,0}},
+    {{1, 1, 0},     {0, 1, 0, 1},   {1,1}},
+    {{-1, 1, 0},    {0, 0, 1, 1},   {0,1}},
+    {{-1, -1, 0},   {0, 0, 0, 1},   {0,0}}
+};
+
+//const Vertex Vertices[] = {
+//    {{1, -1, 0},    {1, 0, 0, 1}},
+//    {{1, 1, 0},     {0, 1, 0, 1}},
+//    {{-1, 1, 0},    {0, 0, 1, 1}},
+//    {{-1, -1, 0},   {0, 0, 0, 1}}
+//};
+#else
+//typedef struct {
+//    float Position[3];
+//} Vertex;
+//
+//const Vertex Vertices[] = {
+//    {1, -1, 0},   
+//    {1, 1, 0},    
+//    {-1, 1, 0},    
+//    {-1, -1, 0},   
+//};
+#endif
+
+const GLubyte Indices[] = {
+    0, 1, 2,
+    2, 3, 0
+};
+
 
 static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
 
-@interface CameraViewController () {
+@interface OpenGLView : UIView
 
+@end
+
+@implementation OpenGLView
+
++ (Class)layerClass {
+    return [CAEAGLLayer class];
 }
+
+@end
+
+
+@interface CameraViewController () {
+    EAGLContext *_context;
+    GLuint _colorRenderBuffer;
+    GLuint _positionSlot;
+    GLuint _colorSlot;
+    GLuint _bgraTexture;
+    GLuint _texCoordSlot;
+    GLuint _textureUniform;
+}
+
+#pragma mark - OpenGL View Configuration
+
+- (void)setupContext;
+- (void)setupRenderBuffer;
+- (void)setupFrameBuffer;
+- (void)compileShaders;
+- (void)setupVBOs;
+- (void)setupDisplayLink;
 
 @end
 
@@ -48,10 +116,30 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     [super dealloc];
 }
 
+- (void)loadView {
+    OpenGLView *eaglView = [[OpenGLView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    _eaglLayer = (CAEAGLLayer *)eaglView.layer;
+    _eaglLayer.opaque = YES;
+    self.view = eaglView;
+    [eaglView release];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    self.view.backgroundColor = [UIColor blackColor];
+
+    [self setupCamera];
+    [self setupOpenGL];
+        
+    /*
+    UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeContactAdd];
+    [doneButton addTarget:self action:@selector(doneButtonPress:) forControlEvents:UIControlEventTouchUpInside];
+    [doneButton setFrame:CGRectMake(0, 0, doneButton.frame.size.width, doneButton.frame.size.height)];
+    [self.view addSubview:doneButton];
+     */
+}
+#pragma mark - Camera Configuration
+
+- (void)setupCamera {
     
     if ([_session canSetSessionPreset:AVCaptureSessionPresetMedium]) {
         _session.sessionPreset = AVCaptureSessionPresetMedium; 
@@ -78,7 +166,7 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     } else {
         NSLog(@"Session cannot add input %@.", input);
     }
-  
+    
     if ([_session canAddOutput:_dataOutput]) {
         [_session addOutput:_dataOutput];
     } else {
@@ -87,46 +175,137 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     [_session commitConfiguration];
     [_session startRunning];
     
-    if (_context == nil)
-    {
-        _context = [[CIContext contextWithOptions:nil] retain];
-    }
-    
-    if (_effectFilter == nil)
-    {
-        NSArray *filters = [CIFilter filterNamesInCategory:kCICategoryBuiltIn];
-        NSLog(@"Available filters: %@", filters);
-        _effectFilter = [[CIFilter filterWithName:@"CIFalseColor"] retain];
-    }
-
-//    self.view.layer.contentsGravity = kCAGravityResizeAspectFill;
-//    self.view.layer.affineTransform = CGAffineTransformMakeRotation(DegreesToRadians(90.));
-
-//    _imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
-//    [_imageView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-//    [self.view addSubview:_imageView];
-//    [_imageView release];
-        
-    
-    if (!_displayLayer) 
-    {
-        _displayLayer = [CALayer layer];
-        [_displayLayer setFrame:self.view.layer.bounds];
-        [self.view.layer addSublayer:_displayLayer];
-    }
-    
-//    CALayer *viewLayer = self.view.layer;
-//    AVCaptureVideoPreviewLayer *captureVideoPreviewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:_session];
-//    captureVideoPreviewLayer.frame = self.view.bounds;
-//    [viewLayer addSublayer:captureVideoPreviewLayer];
-//    [captureVideoPreviewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
-    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(captureSessionRuntimeError:) name:AVCaptureSessionRuntimeErrorNotification object:nil];
+
+}
+
+#pragma mark - OpenGL View Configuration
+
+- (void)setupOpenGL {
+    [self setupContext];
+    [self setupRenderBuffer];
+    [self setupFrameBuffer];
+    [self compileShaders];
+    [self setupVBOs];
+    [self setupDisplayLink];
+}
+
+- (void)setupContext {
+    _context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    if (!_context) {
+        NSLog(@"Failed to initialize context.");
+        exit(1);
+    }
     
-    UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeContactAdd];
-    [doneButton addTarget:self action:@selector(doneButtonPress:) forControlEvents:UIControlEventTouchUpInside];
-    [doneButton setFrame:CGRectMake(0, 0, doneButton.frame.size.width, doneButton.frame.size.height)];
-    [self.view addSubview:doneButton];
+    if (![EAGLContext setCurrentContext:_context]) {
+        NSLog(@"Failed to set current context.");
+        exit(1);
+    }
+}
+
+- (void)setupRenderBuffer {
+    glGenRenderbuffers(1, &_colorRenderBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, _colorRenderBuffer);
+    [_context renderbufferStorage:GL_RENDERBUFFER fromDrawable:_eaglLayer];
+}
+
+- (void)setupFrameBuffer {
+    GLuint framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, _colorRenderBuffer);    
+}
+
+- (GLuint)compileShader:(NSString *)shaderName withType:(GLenum)shaderType {
+    NSString *shaderPath = [[NSBundle mainBundle] pathForResource:shaderName ofType:@"glsl"];
+    NSError *error = nil;
+    NSString *shaderString = [NSString stringWithContentsOfFile:shaderPath encoding:NSUTF8StringEncoding error:&error];
+    if (!shaderString) {
+        NSLog(@"Error loading shader: %@", error.localizedDescription);
+        exit(1);
+    }
+    
+    // Create OpenGL object to represent the shader.
+    GLuint shaderHandle = glCreateShader(shaderType);
+    
+    // Convert shader code to C-string and pass OpenGL the source code.
+    const char *shaderStringUTF8 = [shaderString UTF8String];
+    int shaderStringLength = [shaderString length];
+    glShaderSource(shaderHandle, 1, &shaderStringUTF8, &shaderStringLength);
+    
+    // Compile the shader code.
+    glCompileShader(shaderHandle);
+    
+    // Check if it was successful.
+    GLint compileSuccess;
+    // iv suffix == "integer vector"? or "integer value"?
+    glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &compileSuccess);
+    if (compileSuccess == GL_FALSE) {
+        GLchar messages[256];
+        glGetShaderInfoLog(shaderHandle, sizeof(messages), 0, &messages[0]);
+        NSString *messageString = [NSString stringWithUTF8String:messages];
+        NSLog(@"Compile error from OpenGL: %@", messageString);
+        exit(1);
+    }
+    
+    return shaderHandle;
+}
+
+- (void)compileShaders {
+    // Compile your two shaders.
+    GLuint vertexShader = [self compileShader:@"SimpleVertex" withType:GL_VERTEX_SHADER];
+    GLuint fragmentShader = [self compileShader:@"SimpleFragment" withType:GL_FRAGMENT_SHADER];
+    
+    // Create an OpenGL program to link the shaders into the pipeline.
+    GLuint programHandle = glCreateProgram();
+    glAttachShader(programHandle, vertexShader);
+    glAttachShader(programHandle, fragmentShader);
+    glLinkProgram(programHandle);
+    
+    // Check for link errors.
+    GLint linkSuccess;
+    glGetProgramiv(programHandle, GL_LINK_STATUS, &linkSuccess);
+    if (linkSuccess == GL_FALSE) {
+        GLchar messages[256];
+        glGetShaderInfoLog(programHandle, sizeof(messages), 0, &messages[0]);
+        NSString *messageString = [NSString stringWithUTF8String:messages];
+        NSLog(@"Compile error from OpenGL: %@", messageString);
+        exit(1);
+    }
+    
+    // Set our linked program to be the one OpenGL uses in the pipeline.
+    glUseProgram(programHandle);
+    
+    _positionSlot = glGetAttribLocation(programHandle, "Position");
+    _colorSlot = glGetAttribLocation(programHandle, "SourceColor");
+    _texCoordSlot = glGetAttribLocation(programHandle, "TexCoordIn");
+    glEnableVertexAttribArray(_positionSlot);
+    glEnableVertexAttribArray(_colorSlot);
+    glEnableVertexAttribArray(_texCoordSlot);
+    
+    _textureUniform = glGetUniformLocation(programHandle, "Texture");
+    
+    [self makeDonald];
+    glUniform1i(_textureUniform, 0);
+}
+
+// VBO == Vertex Buffer Object, an OpenGL object to store per-vertex data and indices.
+- (void)setupVBOs {
+    GLuint vertexBuffer;
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+    
+    GLuint indexBuffer;
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Indices), Indices, GL_STATIC_DRAW);
+}
+
+
+- (void)setupDisplayLink {
+//    CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(render:)];
+//    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 }
 
 - (void)viewDidUnload
@@ -134,8 +313,6 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     [super viewDidUnload];
     [_context release];
     _context = nil;
-    [_effectFilter release];
-    _effectFilter = nil;
     [_session stopRunning];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -155,30 +332,213 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
 - (void)captureSessionRuntimeError:(NSNotification *)notification {
 
 }
+/*
+- (void)render {
+    glClearColor(0, 104.0/255.0, 55.0/255.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    // 1
+    glViewport(0, 0, self.view.frame.size.width, self.view.frame.size.height);
+    
+    // 2
+    glVertexAttribPointer(_positionSlot, 3, GL_FLOAT, GL_FALSE, 
+                          sizeof(Vertex), 0);
+    glVertexAttribPointer(_colorSlot, 4, GL_FLOAT, GL_FALSE, 
+                          sizeof(Vertex), (GLvoid*) (sizeof(float) * 3));
+    
+    // 3
+    glDrawElements(GL_TRIANGLES, sizeof(Indices)/sizeof(Indices[0]), 
+                   GL_UNSIGNED_BYTE, 0);
+    [_context presentRenderbuffer:GL_RENDERBUFFER];
+
+}
+ */
+
+- (void)render:(CADisplayLink *)displayLink {
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_SRC_COLOR);
+    glClearColor(0, 104.0/255.0, 55.0/255.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glViewport(0, 0, self.view.frame.size.width, self.view.frame.size.height);
+    glVertexAttribPointer(_positionSlot, // refer to the Position pointer
+                          3, // each position vector has 3 floats
+                          GL_FLOAT, // tell OpenGL they're floats
+                          GL_FALSE, // do not normalize the values
+                          sizeof(Vertex), // the stride -- i.e., the size of each data point -- is the sizeof the Vertex struct
+                          0 // we're looking at the first element of the Vertex struct for position
+                          );
+    
+    glVertexAttribPointer(_colorSlot, // refer to the SourceColor pointer
+                          4, // each color vector has 4 floats
+                          GL_FLOAT, // tell OpenGL they're floats
+                          GL_FALSE, // do not normalize the values
+                          sizeof(Vertex), // the stride -- i.e., the size of each data point -- is the sizeof the Vertex struct
+                          (GLvoid *)(sizeof(float) * 3) // we're looking at the second element of the Vertex -- i.e. offset by the 3 position floats at the start
+                          );
+    glVertexAttribPointer(_texCoordSlot, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *) (sizeof(float) * 7));
+//    
+//    glActiveTexture(GL_TEXTURE0);
+//    glBindTexture(GL_TEXTURE_2D, _bgraTexture);
+//    glUniform1i(_textureUniform, 0);
+    
+    glDrawElements(GL_TRIANGLES, // drawing manner -- in this case, straight-up triangles
+                   sizeof(Indices) / sizeof(Indices[0]), // number of elements in Indices array
+                   GL_UNSIGNED_BYTE, // size of each index (GLubyte, see declaration of Indices)
+                   0 // ordinarily, a pointer to indices -- our indices were already passed to OpenGL in the GL_ELEMENT_ARRAY_BUFFER (see setupVBOs), so no pointer needed here
+                   );
+    [_context presentRenderbuffer:GL_RENDERBUFFER];
+    glFlush();
+}
 
 #pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate Method
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-    @autoreleasepool {
-        CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-        CIImage *ciImage = [CIImage imageWithCVPixelBuffer:imageBuffer];
-        // Image comes out in the wrong orientation, I don't know why.  Turn it to make it right.
-        ciImage = [ciImage imageByApplyingTransform:CGAffineTransformMakeRotation(DegreesToRadians(-90.0))];
-        CGRect imageRect = [ciImage extent];
-        
-        [_effectFilter setValue:ciImage forKey:@"inputImage"];
-        CGImageRef imageRef = [_context createCGImage:[_effectFilter valueForKey:@"outputImage"] fromRect:imageRect];
-        dispatch_queue_t currentQueue = dispatch_get_current_queue();
-        dispatch_retain(currentQueue);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            _displayLayer.contents = (id)imageRef;
-//            _imageView.image = [UIImage imageWithCGImage:imageRef];
-            dispatch_async(currentQueue, ^{
-                CGImageRelease(imageRef);
-            });
-            dispatch_release(currentQueue);
-        });
+
+//    CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+//    CVReturn err = CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+//    if (err) {
+//        NSLog(@"Error locking base address: %d", err);
+//    }
+//    size_t width = CVPixelBufferGetWidth(pixelBuffer);
+//    size_t height = CVPixelBufferGetHeight(pixelBuffer);
+//    
+//    void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer);
+//    size_t bufferSize = CVPixelBufferGetDataSize(pixelBuffer);
+//    CFDataRef data = CFDataCreate(kCFAllocatorDefault, baseAddress, (CFIndex)bufferSize);
+//    const GLvoid *pixels = (GLvoid *)CFDataGetBytePtr(data);
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//        [self updateTexturesWithPixels:pixels width:width height:height];
+//        [self render:nil];
+//        CFRelease(data);
+//    });
+//    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0); 
+     
+    dispatch_async(dispatch_get_main_queue(), ^{
+//        [self makeDonald];
+        [self render:nil];
+    });
+  
+
+
+
+}
+
+- (void)makeDonald {
+    
+    GLenum error = 0;
+    
+    glActiveTexture(GL_TEXTURE0);
+    if (_bgraTexture) {
+        glDeleteTextures(1, &_bgraTexture);
+        _bgraTexture = 0;
     }
+    
+    error = glGetError();
+    
+    glGenTextures(1, &_bgraTexture);
+    error = glGetError();
+    
+    NSLog(@"Generated texture: %u", _bgraTexture);
+    glBindTexture(GL_TEXTURE_2D, _bgraTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    error = glGetError();
+    
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"donald" ofType:@"png"];
+    NSData *texData = [[NSData alloc] initWithContentsOfFile:path];
+    UIImage *image = [[UIImage alloc] initWithData:texData];
+    if (image == nil)
+        NSLog(@"Do real error checking here");
+    
+    
+    CGImageRef CGImage = image.CGImage;
+    GLuint width = CGImageGetWidth(CGImage);
+    GLuint height = CGImageGetHeight(CGImage);
+    
+    CGBitmapInfo info = CGImageGetBitmapInfo(image.CGImage);
+    size_t bpp = CGImageGetBitsPerPixel(image.CGImage);
+    GLenum internal, format;
+	// Choose OpenGL format
+	switch(bpp)
+	{
+		default:
+		case 32:
+		{
+			internal = GL_RGBA;
+			switch(info & kCGBitmapAlphaInfoMask)
+			{
+				case kCGImageAlphaPremultipliedFirst:
+				case kCGImageAlphaFirst:
+				case kCGImageAlphaNoneSkipFirst:
+					format = GL_BGRA;
+					break;
+				default:
+					format = GL_RGBA;
+			}
+			break;
+		}
+		case 24:
+			internal = format = GL_RGB;
+			break;
+		case 16:
+			internal = format = GL_LUMINANCE_ALPHA;
+			break;
+		case 8:
+			internal = format = GL_LUMINANCE;
+			break;
+	}
+	CFDataRef data = CGDataProviderCopyData(CGImageGetDataProvider(CGImage));
+	GLubyte *pixels = (GLubyte *)CFDataGetBytePtr(data);
+    glTexImage2D(GL_TEXTURE_2D, 0, internal, width, height, 0, format, GL_UNSIGNED_BYTE, pixels);
+
+    error = glGetError();
+
+    [image release];
+    [texData release];  
+    
+}
+
+- (void)updateTexturesWithPixels:(const GLvoid *)pixels width:(size_t)width height:(size_t)height {
+
+    
+    GLenum error = 0;
+
+    
+    if (_bgraTexture) {
+        glDeleteTextures(1, &_bgraTexture);
+        _bgraTexture = 0;
+    }
+    
+    
+//    glActiveTexture(GL_TEXTURE0);
+//    glEnable(GL_TEXTURE_2D);
+    error = glGetError();
+
+    glGenTextures(1, &_bgraTexture);
+    error = glGetError();
+
+    NSLog(@"Generated texture: %u", _bgraTexture);
+    glBindTexture(GL_TEXTURE_2D, _bgraTexture);
+    error = glGetError();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    error = glGetError();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    error = glGetError();
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    error = glGetError();
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);    
+    error = glGetError();
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    error = glGetError();
+
+
 }
 
 @end

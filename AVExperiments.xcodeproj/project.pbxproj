@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5702DF601566EA5100339C81 /* donald.png in Resources */ = {isa = PBXBuildFile; fileRef = 5702DF5F1566EA5100339C81 /* donald.png */; };
 		573ECA0615589B3B0022052E /* VideoProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 573ECA0515589B3B0022052E /* VideoProcessor.m */; };
 		574C2E281559BB97008C4B01 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 574C2E271559BB97008C4B01 /* QuartzCore.framework */; };
 		574C2E2B1559BDDD008C4B01 /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 574C2E2A1559BDDD008C4B01 /* CoreImage.framework */; };
@@ -25,9 +26,13 @@
 		5770482115549C5700BACCBD /* PlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5770482015549C5700BACCBD /* PlayerViewController.m */; };
 		5770482415549F9B00BACCBD /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5770482315549F9B00BACCBD /* MediaPlayer.framework */; };
 		57E42B03156482660046604C /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57E42B02156482660046604C /* OpenGLES.framework */; };
+		57EF44C715659D3D001EBDC2 /* SimpleVertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 57EF44C515659D3D001EBDC2 /* SimpleVertex.glsl */; };
+		57EF44C815659D3D001EBDC2 /* SimpleFragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 57EF44C615659D3D001EBDC2 /* SimpleFragment.glsl */; };
+		57EF44CF1565B867001EBDC2 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57EF44CE1565B867001EBDC2 /* ImageIO.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5702DF5F1566EA5100339C81 /* donald.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = donald.png; sourceTree = "<group>"; };
 		573ECA0415589B3B0022052E /* VideoProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoProcessor.h; sourceTree = "<group>"; };
 		573ECA0515589B3B0022052E /* VideoProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoProcessor.m; sourceTree = "<group>"; };
 		574C2E271559BB97008C4B01 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -56,6 +61,9 @@
 		5770482015549C5700BACCBD /* PlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayerViewController.m; sourceTree = "<group>"; };
 		5770482315549F9B00BACCBD /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		57E42B02156482660046604C /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		57EF44C515659D3D001EBDC2 /* SimpleVertex.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SimpleVertex.glsl; sourceTree = "<group>"; };
+		57EF44C615659D3D001EBDC2 /* SimpleFragment.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SimpleFragment.glsl; sourceTree = "<group>"; };
+		57EF44CE1565B867001EBDC2 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57EF44CF1565B867001EBDC2 /* ImageIO.framework in Frameworks */,
 				57E42B03156482660046604C /* OpenGLES.framework in Frameworks */,
 				574C2E2D1559C171008C4B01 /* CoreVideo.framework in Frameworks */,
 				574C2E2B1559BDDD008C4B01 /* CoreImage.framework in Frameworks */,
@@ -82,6 +91,7 @@
 		5760D96C155478940016B637 = {
 			isa = PBXGroup;
 			children = (
+				57EF44CE1565B867001EBDC2 /* ImageIO.framework */,
 				57E42B02156482660046604C /* OpenGLES.framework */,
 				574C2E2C1559C171008C4B01 /* CoreVideo.framework */,
 				574C2E2A1559BDDD008C4B01 /* CoreImage.framework */,
@@ -116,6 +126,9 @@
 		5760D981155478940016B637 /* AVExperiments */ = {
 			isa = PBXGroup;
 			children = (
+				5702DF5F1566EA5100339C81 /* donald.png */,
+				57EF44C515659D3D001EBDC2 /* SimpleVertex.glsl */,
+				57EF44C615659D3D001EBDC2 /* SimpleFragment.glsl */,
 				5760D99C15548EA80016B637 /* FZMacros.h */,
 				5760D98A155478940016B637 /* AppDelegate.h */,
 				5760D98B155478940016B637 /* AppDelegate.m */,
@@ -197,6 +210,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				5760D986155478940016B637 /* InfoPlist.strings in Resources */,
+				57EF44C715659D3D001EBDC2 /* SimpleVertex.glsl in Resources */,
+				57EF44C815659D3D001EBDC2 /* SimpleFragment.glsl in Resources */,
+				5702DF601566EA5100339C81 /* donald.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
