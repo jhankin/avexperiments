@@ -11,6 +11,7 @@
 #import <QuartzCore/QuartzCore.h>
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
+#import "OpenGLView.h"
 
 @interface CameraViewController : UIViewController <AVCaptureVideoDataOutputSampleBufferDelegate> {
     CAEAGLLayer *_eaglLayer;

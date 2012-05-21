@@ -6,14 +6,11 @@
 //  Copyright (c) 2012 Blackboard, Inc. All rights reserved.
 //
 
-#import "CameraViewController.h"
+#import "CameraViewController_YUV.h"
 #import "FZMacros.h"
 #import "VideoProcessor.h"
 #import <CoreVideo/CoreVideo.h>
 
-#define COLOR_TEST 1
-
-#if COLOR_TEST
 typedef struct {
     float Position[3];
     float Color[4];
@@ -27,25 +24,6 @@ const Vertex Vertices[] = {
     {{-1, -1, 0},   {0, 0, 0, 1},   {1,1}}
 };
 
-//const Vertex Vertices[] = {
-//    {{1, -1, 0},    {1, 0, 0, 1}},
-//    {{1, 1, 0},     {0, 1, 0, 1}},
-//    {{-1, 1, 0},    {0, 0, 1, 1}},
-//    {{-1, -1, 0},   {0, 0, 0, 1}}
-//};
-#else
-//typedef struct {
-//    float Position[3];
-//} Vertex;
-//
-//const Vertex Vertices[] = {
-//    {1, -1, 0},   
-//    {1, 1, 0},    
-//    {-1, 1, 0},    
-//    {-1, -1, 0},   
-//};
-#endif
-
 const GLubyte Indices[] = {
     0, 1, 2,
     2, 3, 0
@@ -55,12 +33,11 @@ const GLubyte Indices[] = {
 static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
 
 
-@interface CameraViewController () {
+@interface CameraViewController_YUV () {
     EAGLContext *_context;
     GLuint _colorRenderBuffer;
     GLuint _positionSlot;
     GLuint _colorSlot;
-    GLuint _bgraTexture;
     GLuint _texCoordSlot;
     GLuint _textureUniform;
 }
@@ -76,7 +53,7 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
 
 @end
 
-@implementation CameraViewController
+@implementation CameraViewController_YUV
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -87,10 +64,10 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
         _serialQueue = dispatch_queue_create("com.chronocide.avexperiments.videoprocessorqueue", DISPATCH_QUEUE_SERIAL);
         [_dataOutput setSampleBufferDelegate:self queue:_serialQueue];
         
+        
         NSArray *availableVideoCVPixelFormatTypes = _dataOutput.availableVideoCVPixelFormatTypes;
-        if ([availableVideoCVPixelFormatTypes containsObject:[NSNumber numberWithInt:(int)'BGRA']]) {
-            [_dataOutput setVideoSettings:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:(int)'BGRA']
-                                                                      forKey:(NSString *)kCVPixelBufferPixelFormatTypeKey]];
+        if ([availableVideoCVPixelFormatTypes containsObject:[NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]]) {
+            [_dataOutput setVideoSettings:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange] forKey:(NSString *)kCVPixelBufferPixelFormatTypeKey]];
         }
     }
     return self;
@@ -380,6 +357,55 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     glFlush();
 }
 
+#pragma mark - Textures
+
+- (void)cleanupTextures {
+    if (_lumaGluint) {
+        glDeleteTextures(1, &_lumaGluint);
+        _lumaGluint = 0;
+    }
+    
+    if (_chromaGluint) {
+        glDeleteTextures(1, &_chromaGluint);
+        _chromaGluint = 0;
+    }
+}
+
+- (void)generateTextures {
+    GLenum error = 0;
+    
+    [self cleanupTextures];
+    
+    error = glGetError();
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &_lumaGluint);
+    error = glGetError();
+    
+    NSLog(@"Generated texture: %u", _lumaGluint);
+    glBindTexture(GL_TEXTURE_2D, _lumaGluint);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    error = glGetError();
+    glUniform1i(_textureUniform, 0);
+    error = glGetError();
+    
+    glActiveTexture(GL_TEXTURE1);
+    glGenTextures(1, &_chromaGluint);
+    error = glGetError();
+    
+    NSLog(@"Generated texture: %u", _chromaGluint);
+    glBindTexture(GL_TEXTURE_2D, _chromaGluint);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    error = glGetError();
+    glUniform1i(_textureUniform, 0);
+}
+
+
 #pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate Method
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
@@ -391,6 +417,10 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     
     CVReturn err = CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    void *yPlaneBaseAddress = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0);
+    void *uvPlaneBaseAddress = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1);
+    
+    
     if (err) {
         NSLog(@"Error locking base address: %d", err);
     }
@@ -398,15 +428,18 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     size_t height = CVPixelBufferGetHeight(pixelBuffer);
     OSType pixelFormat = CVPixelBufferGetPixelFormatType(pixelBuffer);
     void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer);
-    CGImageRef image = [self newCGImageFromPixelBuffer:pixelBuffer];
+//    CGImageRef image = [self newCGImageFromPixelBuffer:pixelBuffer];
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        [self generateTexture];
-        [self setTextureImageFromCGImage:image];
-//        [self setTextureFromBytePointer:baseAddress width:width height:height];
-        //        [self makeDonald];
+        [self generateTextures];
+        glActiveTexture(GL_TEXTURE0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED_EXT, width, height, 0, GL_RED_EXT, GL_UNSIGNED_BYTE, yPlaneBaseAddress);
+        glActiveTexture(GL_TEXTURE1);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG_EXT, width / 2, height / 2, 0, GL_RG_EXT, GL_UNSIGNED_BYTE, uvPlaneBaseAddress);
+
+//        [self setTextureImageFromCGImage:image];
         [self render:nil];
-        CGImageRelease(image);
+//        CGImageRelease(image);
         
     });
     
@@ -484,86 +517,6 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     if (error) {
         DLog(@"GLError: %u", error);
     }
-}
-
-- (void)generateTexture {
-    GLenum error = 0;
-    
-    glActiveTexture(GL_TEXTURE0);
-    if (_bgraTexture) {
-        glDeleteTextures(1, &_bgraTexture);
-        _bgraTexture = 0;
-    }
-    
-    error = glGetError();
-    
-    glGenTextures(1, &_bgraTexture);
-    error = glGetError();
-    
-    glBindTexture(GL_TEXTURE_2D, _bgraTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    error = glGetError();
-    glUniform1i(_textureUniform, 0);
-}
-
-- (void)makeDonald {
-    
-    [self generateTexture];
-    
-    NSString *path = [[NSBundle mainBundle] pathForResource:@"donald" ofType:@"png"];
-    NSData *texData = [[NSData alloc] initWithContentsOfFile:path];
-    UIImage *image = [[UIImage alloc] initWithData:texData];
-    if (image == nil)
-        NSLog(@"Do real error checking here");
-    
-    
-    CGImageRef CGImage = image.CGImage;
-    [self setTextureImageFromCGImage:CGImage];
-    [image release];
-    [texData release];  
-    
-}
-
-- (void)updateTexturesWithPixels:(const GLvoid *)pixels width:(size_t)width height:(size_t)height {
-
-    
-    GLenum error = 0;
-
-    
-    if (_bgraTexture) {
-        glDeleteTextures(1, &_bgraTexture);
-        _bgraTexture = 0;
-    }
-    
-    
-//    glActiveTexture(GL_TEXTURE0);
-//    glEnable(GL_TEXTURE_2D);
-    error = glGetError();
-
-    glGenTextures(1, &_bgraTexture);
-    error = glGetError();
-
-    NSLog(@"Generated texture: %u", _bgraTexture);
-    glBindTexture(GL_TEXTURE_2D, _bgraTexture);
-    error = glGetError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    error = glGetError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    error = glGetError();
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    error = glGetError();
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);    
-    error = glGetError();
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    error = glGetError();
-
-
 }
 
 @end
