@@ -33,6 +33,7 @@ const GLubyte Indices[] = {
 static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
 
 
+
 @interface CameraViewController_YUV () {
     EAGLContext *_context;
     GLuint _colorRenderBuffer;

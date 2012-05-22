@@ -27,6 +27,15 @@ const Vertex Vertices[] = {
     {{-1, -1, 0},   {0, 0, 0, 1},   {1,1}}
 };
 
+// Uniform index.
+enum
+{
+    UNIFORM_Y,
+    UNIFORM_UV,
+    NUM_UNIFORMS
+};
+GLint uniforms[NUM_UNIFORMS];
+
 //const Vertex Vertices[] = {
 //    {{1, -1, 0},    {1, 0, 0, 1}},
 //    {{1, 1, 0},     {0, 1, 0, 1}},
@@ -60,7 +69,6 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     GLuint _colorRenderBuffer;
     GLuint _positionSlot;
     GLuint _colorSlot;
-    GLuint _bgraTexture;
     GLuint _texCoordSlot;
     GLuint _textureUniform;
 }
@@ -84,12 +92,16 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     if (self) {
         _session = [[AVCaptureSession alloc] init];
         _dataOutput = [[AVCaptureVideoDataOutput alloc] init];
-        _serialQueue = dispatch_queue_create("com.chronocide.avexperiments.videoprocessorqueue", DISPATCH_QUEUE_SERIAL);
-        [_dataOutput setSampleBufferDelegate:self queue:_serialQueue];
+//        _serialQueue = dispatch_queue_create("com.chronocide.avexperiments.videoprocessorqueue", DISPATCH_QUEUE_SERIAL);
+        [_dataOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
         
         NSArray *availableVideoCVPixelFormatTypes = _dataOutput.availableVideoCVPixelFormatTypes;
-        if ([availableVideoCVPixelFormatTypes containsObject:[NSNumber numberWithInt:(int)'BGRA']]) {
-            [_dataOutput setVideoSettings:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:(int)'BGRA']
+//        if ([availableVideoCVPixelFormatTypes containsObject:[NSNumber numberWithInt:(int)'BGRA']]) {
+//            [_dataOutput setVideoSettings:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:(int)'BGRA']
+//                                                                      forKey:(NSString *)kCVPixelBufferPixelFormatTypeKey]];
+//        }
+        if ([availableVideoCVPixelFormatTypes containsObject:[NSNumber numberWithInt:(int)'420v']]) {
+            [_dataOutput setVideoSettings:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:(int)'420v']
                                                                       forKey:(NSString *)kCVPixelBufferPixelFormatTypeKey]];
         }
     }
@@ -99,7 +111,8 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
 - (void)dealloc {
     [_session release];
     [_dataOutput release];
-    dispatch_release(_serialQueue);
+//    dispatch_release(_serialQueue);
+    CFRelease(_videoTextureCache);
     [_context release];
     [super dealloc];
 }
@@ -189,6 +202,7 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
         NSLog(@"Failed to set current context.");
         exit(1);
     }
+    CVReturn err = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, NULL, (__bridge void *)_context, NULL, &_videoTextureCache);
 }
 
 - (void)setupRenderBuffer {
@@ -204,8 +218,8 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, _colorRenderBuffer);    
 }
 
-- (GLuint)compileShader:(NSString *)shaderName withType:(GLenum)shaderType {
-    NSString *shaderPath = [[NSBundle mainBundle] pathForResource:shaderName ofType:@"glsl"];
+- (GLuint)compileShader:(NSString *)shaderName withExtension:(NSString *)extension withType:(GLenum)shaderType {
+    NSString *shaderPath = [[NSBundle mainBundle] pathForResource:shaderName ofType:extension];
     NSError *error = nil;
     NSString *shaderString = [NSString stringWithContentsOfFile:shaderPath encoding:NSUTF8StringEncoding error:&error];
     if (!shaderString) {
@@ -241,8 +255,8 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
 
 - (void)compileShaders {
     // Compile your two shaders.
-    GLuint vertexShader = [self compileShader:@"SimpleVertex" withType:GL_VERTEX_SHADER];
-    GLuint fragmentShader = [self compileShader:@"SimpleFragment" withType:GL_FRAGMENT_SHADER];
+    GLuint vertexShader = [self compileShader:@"SimpleVertex" withExtension:@"glsl" withType:GL_VERTEX_SHADER];
+    GLuint fragmentShader = [self compileShader:@"FragmentYUV" withExtension:@"glsl" withType:GL_FRAGMENT_SHADER];
     
     // Create an OpenGL program to link the shaders into the pipeline.
     GLuint programHandle = glCreateProgram();
@@ -270,11 +284,17 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     glEnableVertexAttribArray(_positionSlot);
     glEnableVertexAttribArray(_colorSlot);
     glEnableVertexAttribArray(_texCoordSlot);
-    
-    _textureUniform = glGetUniformLocation(programHandle, "Texture");
-    
-//    [self makeDonald];
-//    glUniform1i(_textureUniform, 0);
+
+    // JH: This is only sufficient for stuff coming in as RGB -- if it's coming in as YUV, we need separate samplers for the two planes.  Hence the struct.
+//    _textureUniform = glGetUniformLocation(programHandle, "Texture");
+
+    // Get uniform locations.
+    uniforms[UNIFORM_Y] = glGetUniformLocation(programHandle, "SamplerY");
+    uniforms[UNIFORM_UV] = glGetUniformLocation(programHandle, "SamplerUV");
+
+    glUniform1i(uniforms[UNIFORM_Y], 0);
+    glUniform1i(uniforms[UNIFORM_UV], 1);
+    //    glUniform1i(_textureUniform, 0);
 }
 
 // VBO == Vertex Buffer Object, an OpenGL object to store per-vertex data and indices.
@@ -292,8 +312,8 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
 
 
 - (void)setupDisplayLink {
-//    CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(render:)];
-//    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    CADisplayLink *displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(render:)];
+    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 }
 
 - (void)viewDidUnload
@@ -342,11 +362,32 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
 }
  */
 
+static float whiteBalance = 0.0f;
+static BOOL ascending = YES;
+
 - (void)render:(CADisplayLink *)displayLink {
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_SRC_COLOR);
-    glClearColor(0, 104.0/255.0, 55.0/255.0, 1.0);
+    
+    CFTimeInterval timeInterval = (displayLink.duration * displayLink.frameInterval);
+    if (ascending) {
+        whiteBalance += timeInterval;
+    } else {
+        whiteBalance -= timeInterval;
+    }
+    
+    if (whiteBalance <= 0.0f) {
+        whiteBalance = 0.0f;
+        ascending = YES;
+    } else if (whiteBalance >= 1.0f) {
+        whiteBalance = 1.0f;
+        ascending = NO;
+    }
+    
+    
+    
+    glClearColor(whiteBalance, whiteBalance, whiteBalance, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glViewport(self.view.frame.origin.x, self.view.frame.origin.y, self.view.frame.size.width, self.view.frame.size.height);
@@ -380,13 +421,94 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     glFlush();
 }
 
+#pragma mark - Textures
+
+- (void)cleanUpTextures
+{    
+    if (_lumaTexture)
+    {
+        CFRelease(_lumaTexture);
+        _lumaTexture = NULL;        
+    }
+    
+    if (_chromaTexture)
+    {
+        CFRelease(_chromaTexture);
+        _chromaTexture = NULL;
+    }
+    
+    // Periodic texture cache flush every frame
+    CVOpenGLESTextureCacheFlush(_videoTextureCache, 0);
+}
+
+- (void)generateTexturesFromPixelBuffer:(CVImageBufferRef)pixelBuffer {
+    CVReturn err;
+    size_t width = CVPixelBufferGetWidth(pixelBuffer);
+    size_t height = CVPixelBufferGetHeight(pixelBuffer);
+    
+    if (!_videoTextureCache)
+    {
+        NSLog(@"No video texture cache");
+        return;
+    }
+    
+    
+    [self cleanUpTextures];
+    
+    // CVOpenGLESTextureCacheCreateTextureFromImage will create GLES texture
+    // optimally from CVImageBufferRef.
+    
+    // Y-plane
+    glActiveTexture(GL_TEXTURE0);
+    err = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, 
+                                                       _videoTextureCache,
+                                                       pixelBuffer,
+                                                       NULL,
+                                                       GL_TEXTURE_2D,
+                                                       GL_RED_EXT,
+                                                       width,
+                                                       height,
+                                                       GL_RED_EXT,
+                                                       GL_UNSIGNED_BYTE,
+                                                       0,
+                                                       &_lumaTexture);
+    if (err) 
+    {
+        NSLog(@"Error at CVOpenGLESTextureCacheCreateTextureFromImage %d", err);
+    }   
+    
+    glBindTexture(CVOpenGLESTextureGetTarget(_lumaTexture), CVOpenGLESTextureGetName(_lumaTexture));
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
+    
+    // UV-plane
+    glActiveTexture(GL_TEXTURE1);
+    err = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, 
+                                                       _videoTextureCache,
+                                                       pixelBuffer,
+                                                       NULL,
+                                                       GL_TEXTURE_2D,
+                                                       GL_RG_EXT,
+                                                       width/2,
+                                                       height/2,
+                                                       GL_RG_EXT,
+                                                       GL_UNSIGNED_BYTE,
+                                                       1,
+                                                       &_chromaTexture);
+    if (err) 
+    {
+        NSLog(@"Error at CVOpenGLESTextureCacheCreateTextureFromImage %d", err);
+    }
+    
+    glBindTexture(CVOpenGLESTextureGetTarget(_chromaTexture), CVOpenGLESTextureGetName(_chromaTexture));
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); 
+    
+}
+
 #pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate Method
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-
-//    dispatch_async(dispatch_get_main_queue(), ^{
-//        [self render:nil];
-//    });
     
     CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     
@@ -394,21 +516,13 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     if (err) {
         NSLog(@"Error locking base address: %d", err);
     }
-    size_t width = CVPixelBufferGetWidth(pixelBuffer);
-    size_t height = CVPixelBufferGetHeight(pixelBuffer);
-    OSType pixelFormat = CVPixelBufferGetPixelFormatType(pixelBuffer);
-    void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer);
-    CGImageRef image = [self newCGImageFromPixelBuffer:pixelBuffer];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        [self generateTexture];
-        [self setTextureImageFromCGImage:image];
+    [self generateTexturesFromPixelBuffer:pixelBuffer];
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//        [self setTextureImageFromCGImage:image];
 //        [self setTextureFromBytePointer:baseAddress width:width height:height];
         //        [self makeDonald];
-        [self render:nil];
-        CGImageRelease(image);
-        
-    });
+//        [self render:nil];        
+//    });
     
     CVPixelBufferUnlockBaseAddress(pixelBuffer, 0); 
 }
@@ -484,86 +598,6 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     if (error) {
         DLog(@"GLError: %u", error);
     }
-}
-
-- (void)generateTexture {
-    GLenum error = 0;
-    
-    glActiveTexture(GL_TEXTURE0);
-    if (_bgraTexture) {
-        glDeleteTextures(1, &_bgraTexture);
-        _bgraTexture = 0;
-    }
-    
-    error = glGetError();
-    
-    glGenTextures(1, &_bgraTexture);
-    error = glGetError();
-    
-    glBindTexture(GL_TEXTURE_2D, _bgraTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    error = glGetError();
-    glUniform1i(_textureUniform, 0);
-}
-
-- (void)makeDonald {
-    
-    [self generateTexture];
-    
-    NSString *path = [[NSBundle mainBundle] pathForResource:@"donald" ofType:@"png"];
-    NSData *texData = [[NSData alloc] initWithContentsOfFile:path];
-    UIImage *image = [[UIImage alloc] initWithData:texData];
-    if (image == nil)
-        NSLog(@"Do real error checking here");
-    
-    
-    CGImageRef CGImage = image.CGImage;
-    [self setTextureImageFromCGImage:CGImage];
-    [image release];
-    [texData release];  
-    
-}
-
-- (void)updateTexturesWithPixels:(const GLvoid *)pixels width:(size_t)width height:(size_t)height {
-
-    
-    GLenum error = 0;
-
-    
-    if (_bgraTexture) {
-        glDeleteTextures(1, &_bgraTexture);
-        _bgraTexture = 0;
-    }
-    
-    
-//    glActiveTexture(GL_TEXTURE0);
-//    glEnable(GL_TEXTURE_2D);
-    error = glGetError();
-
-    glGenTextures(1, &_bgraTexture);
-    error = glGetError();
-
-    NSLog(@"Generated texture: %u", _bgraTexture);
-    glBindTexture(GL_TEXTURE_2D, _bgraTexture);
-    error = glGetError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    error = glGetError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    error = glGetError();
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    error = glGetError();
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);    
-    error = glGetError();
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    error = glGetError();
-
-
 }
 
 @end

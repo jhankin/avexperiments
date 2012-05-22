@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import <QuartzCore/QuartzCore.h>
+#import <CoreVideo/CoreVideo.h>
+#import <CoreVideo/CVOpenGLESTexture.h>
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
 #import "OpenGLView.h"
@@ -23,6 +25,12 @@
     AVCaptureVideoPreviewLayer *_previewLayer;
     CALayer *_displayLayer;
     UIImageView *_imageView;
+    
+    
+    CVOpenGLESTextureRef _lumaTexture;
+    CVOpenGLESTextureRef _chromaTexture;
+    CVOpenGLESTextureCacheRef _videoTextureCache;    
+
 }
 
 @end
