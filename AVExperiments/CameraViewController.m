@@ -10,6 +10,7 @@
 #import "FZMacros.h"
 #import "VideoProcessor.h"
 #import <CoreVideo/CoreVideo.h>
+#import <CoreMotion/CoreMotion.h>
 
 #define COLOR_TEST 1
 
@@ -32,6 +33,7 @@ enum
 {
     UNIFORM_Y,
     UNIFORM_UV,
+    UNIFORM_QUATERNION,
     NUM_UNIFORMS
 };
 GLint uniforms[NUM_UNIFORMS];
@@ -71,6 +73,8 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     GLuint _colorSlot;
     GLuint _texCoordSlot;
     GLuint _textureUniform;
+    CMMotionManager *_motionManager;
+    NSOperationQueue *_motionOperationQueue;
 }
 
 #pragma mark - OpenGL View Configuration
@@ -130,6 +134,7 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
 
     [self setupCamera];
     [self setupOpenGL];
+    [self setupGyro];
         
     /*
     UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeContactAdd];
@@ -291,7 +296,8 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     // Get uniform locations.
     uniforms[UNIFORM_Y] = glGetUniformLocation(programHandle, "SamplerY");
     uniforms[UNIFORM_UV] = glGetUniformLocation(programHandle, "SamplerUV");
-
+    uniforms[UNIFORM_QUATERNION] = glGetUniformLocation(programHandle, "Quaternion");
+    
     glUniform1i(uniforms[UNIFORM_Y], 0);
     glUniform1i(uniforms[UNIFORM_UV], 1);
     //    glUniform1i(_textureUniform, 0);
@@ -316,12 +322,31 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 }
 
+#pragma mark - Gyro Setup
+
+- (void)setupGyro {
+    _motionManager = [[CMMotionManager alloc] init];
+    _motionOperationQueue = [[NSOperationQueue alloc] init];
+    [_motionManager setDeviceMotionUpdateInterval:1.0 / 60.0];
+    [_motionManager startDeviceMotionUpdatesToQueue:_motionOperationQueue withHandler:^(CMDeviceMotion *motion, NSError *error) {
+        CMQuaternion quaternion = [[motion attitude] quaternion];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            glUniform4f(uniforms[UNIFORM_QUATERNION], quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+            NSLog(@"Dispatched quaternion: q.x: %f q.y: %f q.z: %f q.w: %f", quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+        });
+    }];
+}
+
+
 - (void)viewDidUnload
 {
     [super viewDidUnload];
     [_context release];
     _context = nil;
     [_session stopRunning];
+    [_motionManager stopDeviceMotionUpdates];
+    [_motionManager release];
+    [_motionOperationQueue release];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -334,6 +359,7 @@ static CGFloat DegreesToRadians(CGFloat degrees) {return degrees * M_PI / 180;};
     [_session stopRunning];
     [self dismissModalViewControllerAnimated:YES];
 }
+
 
 #pragma mark - Notifications
 
@@ -387,7 +413,8 @@ static BOOL ascending = YES;
     
     
     
-    glClearColor(whiteBalance, whiteBalance, whiteBalance, 1.0);
+//    glClearColor(whiteBalance, whiteBalance, whiteBalance, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glViewport(self.view.frame.origin.x, self.view.frame.origin.y, self.view.frame.size.width, self.view.frame.size.height);

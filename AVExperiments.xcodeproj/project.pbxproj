@@ -27,6 +27,7 @@
 		5760D9B4155499680016B637 /* ShowVideosViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5760D9B3155499680016B637 /* ShowVideosViewController.m */; };
 		5770482115549C5700BACCBD /* PlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5770482015549C5700BACCBD /* PlayerViewController.m */; };
 		5770482415549F9B00BACCBD /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5770482315549F9B00BACCBD /* MediaPlayer.framework */; };
+		57B19D1C156C5F5B00294AF6 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57B19D1B156C5F5B00294AF6 /* CoreMotion.framework */; };
 		57E42B03156482660046604C /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57E42B02156482660046604C /* OpenGLES.framework */; };
 		57EF44C715659D3D001EBDC2 /* SimpleVertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 57EF44C515659D3D001EBDC2 /* SimpleVertex.glsl */; };
 		57EF44C815659D3D001EBDC2 /* SimpleFragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 57EF44C615659D3D001EBDC2 /* SimpleFragment.glsl */; };
@@ -65,6 +66,7 @@
 		5770481F15549C5700BACCBD /* PlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerViewController.h; sourceTree = "<group>"; };
 		5770482015549C5700BACCBD /* PlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayerViewController.m; sourceTree = "<group>"; };
 		5770482315549F9B00BACCBD /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+		57B19D1B156C5F5B00294AF6 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		57E42B02156482660046604C /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		57EF44C515659D3D001EBDC2 /* SimpleVertex.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SimpleVertex.glsl; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
 		57EF44C615659D3D001EBDC2 /* SimpleFragment.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SimpleFragment.glsl; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
@@ -76,6 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57B19D1C156C5F5B00294AF6 /* CoreMotion.framework in Frameworks */,
 				57EF44CF1565B867001EBDC2 /* ImageIO.framework in Frameworks */,
 				57E42B03156482660046604C /* OpenGLES.framework in Frameworks */,
 				574C2E2D1559C171008C4B01 /* CoreVideo.framework in Frameworks */,
@@ -96,6 +99,7 @@
 		5760D96C155478940016B637 = {
 			isa = PBXGroup;
 			children = (
+				57B19D1B156C5F5B00294AF6 /* CoreMotion.framework */,
 				57EF44CE1565B867001EBDC2 /* ImageIO.framework */,
 				57E42B02156482660046604C /* OpenGLES.framework */,
 				574C2E2C1559C171008C4B01 /* CoreVideo.framework */,
